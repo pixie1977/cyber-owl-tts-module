@@ -1,0 +1,41 @@
+# Используем официальный образ Python 3.10 (слабая версия для минимального размера)
+FROM python:3.10-slim
+
+# Устанавливаем метаданные
+LABEL maintainer="you@example.com"
+LABEL description="TTS server with Silero for Russian using FastAPI"
+
+# Устанавливаем рабочую директорию
+WORKDIR /app
+
+# Системные зависимости
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libportaudio2 \
+    libasound2 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Копируем pyproject.toml и устанавливаем зависимости
+COPY pyproject.toml ./
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir ".[dev]" && \
+    pip install --no-cache-dir uvicorn gunicorn
+
+# Копируем остальные файлы проекта
+COPY . .
+
+# Делаем start.sh исполняемым (на случай, если права потерялись)
+RUN chmod +x /app/start.sh
+
+# Экспорт переменных окружения по умолчанию
+ENV TTS_HOST=0.0.0.0
+ENV TTS_PORT=8081
+ENV TTS_LOG_LEVEL=info
+ENV TTS_DOC_ROOT=/app/src/content
+ENV TTS_USE_TORCH_MODEL_MANAGER=false
+
+# Открываем порт
+EXPOSE $TTS_PORT
+
+# Точка входа
+CMD ["/app/start.sh"]

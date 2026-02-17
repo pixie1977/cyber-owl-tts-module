@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <title>Cyber Owl TTS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f7f7f7;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .links {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.1em;
+        }
+        .links a {
+            margin: 0 15px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔊 Cyber Owl TTS</h1>
+
+    <div class="links">
+        <a href="/docs" target="_blank">📖 API Документация (Swagger)</a> |
+        <a href="/redoc" target="_blank">📚 ReDoc</a>
+    </div>
+
+    <div class="form-group">
+        <label for="text">Текст для озвучки:</label>
+        <textarea id="text" rows="4" placeholder="Введите текст на русском..."></textarea>
+    </div>
+
+    <button onclick="speakText()">Озвучить (POST JSON)</button>
+    <button onclick="speakGet()">Озвучить через GET</button>
+
+    <div id="status" class="status" style="display: none;"></div>
+
+    <script>
+        const API_BASE = "http://localhost:8081";
+
+        function setStatus(message, isError = false) {
+            const statusEl = document.getElementById("status");
+            statusEl.textContent = message;
+            statusEl.className = "status " + (isError ? "error" : "success");
+            statusEl.style.display = "block";
+        }
+
+        async function speakText() {
+            const text = document.getElementById("text").value.trim();
+            if (!text) {
+                setStatus("Введите текст!", true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/tts/json`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ text })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setStatus(`✅ Успешно: "${data.text}"`);
+                } else {
+                    const error = await response.json().catch(() => ({ detail: "Неизвестная ошибка" }));
+                    setStatus(`❌ Ошибка: ${error.detail}`, true);
+                }
+            } catch (err) {
+                setStatus(`⚠️ Сеть: ${err.message}`, true);
+            }
+        }
+
+        async function speakGet() {
+            const text = document.getElementById("text").value.trim();
+            if (!text) {
+                setStatus("Введите текст!", true);
+                return;
+            }
+
+            try {
+                const encodedText = encodeURIComponent(text);
+                const response = await fetch(`${API_BASE}/api/speak?text=${encodedText}`);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setStatus(`✅ GET: "${data.text}"`);
+                } else {
+                    const error = await response.json().catch(() => ({ detail: "Неизвестная ошибка" }));
+                    setStatus(`❌ Ошибка: ${error.detail}`, true);
+                }
+            } catch (err) {
+                setStatus(`⚠️ Сеть: ${err.message}`, true);
+            }
+        }
+    </script>
+</body>
+</html>

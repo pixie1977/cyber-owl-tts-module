@@ -1,0 +1,116 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cyber-owl-tts"
+version = "0.1.0"
+description = "TTS module for Russian voice synthesis using Silero"
+authors = [{ name = "Your Name", email = "you@example.com" }]
+readme = "README.md"
+license = { text = "MIT" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+    "Environment :: Console",
+    "Framework :: FastAPI",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "torch",
+    "torchaudio",
+    "omegaconf",
+    "pygame",
+    "python-dotenv",
+    "fastapi",
+    "uvicorn",
+    "prometheus-fastapi-instrumentator",
+]
+dynamic = ["scripts"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "black",
+    "flake8",
+    "mypy",
+    "pytest-asyncio",
+    "httpx",
+]
+docs = [
+    "mkdocs",
+    "mkdocstrings[python]",
+    "mkdocs-material",
+]
+all = ["cyber-owl-tts[dev,docs]"]
+
+[project.urls]
+Homepage = "https://github.com/yourname/cyber-owl-tts"
+Repository = "https://github.com/yourname/cyber-owl-tts"
+Documentation = "https://cyber-owl-tts.readthedocs.io"
+Changelog = "https://github.com/yourname/cyber-owl-tts/releases"
+
+[project.scripts]
+cyber-owl-tts = "cyber_owl_tts.app.httpd:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["cyber_owl_tts*"]
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.setuptools.dynamic.scripts]
+paths = ["src/app/httpd.py"]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  \.eggs
+| \.git
+| \.hg
+| \.mypy_cache
+| \.tox
+| \.venv
+| _build
+| buck-out
+| build
+| dist
+)/
+'''
+
+[tool.mypy]
+mypy_path = "src"
+files = ["src"]
+strict = true
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_untyped_defs = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-v -x --tb=short"
+
+[tool.coverage.run]
+source = ["cyber_owl_tts"]
+omit = ["**/__init__.py", "**/utils.py"]  # опционально
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+]
