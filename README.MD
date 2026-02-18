@@ -11,7 +11,7 @@ $pip install .
 $pip install -e .
 
 ## Запуск
-$python -m cyber_owl_tts.app.text_to_speech
+$python -m main
 
 ## Конфигурация
 Создайте `.env` по образу и подобию .env_example
@@ -23,7 +23,7 @@ $python -m venv venv
 - win:
 ./venv/Scripts/activate.bat
 - linux:
-$source .venv/bin/activete
+$source venv/bin/activate
 
 ### Установка зависимостей (если нужно) 
 ## Для работы с pytorch необходимо установить версию python 3.8, а также библиотеки для CUDA 

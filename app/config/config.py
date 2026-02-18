@@ -7,6 +7,7 @@ CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 load_dotenv()
 
+
 TTS_PORT = os.getenv("TTS_PORT")
 if not TTS_PORT:
     raise ValueError("Не задан TTS_PORT в .env")
@@ -28,3 +29,5 @@ TTS_USE_TORCH_MODEL_MANAGER_STR = os.getenv("TTS_USE_TORCH_MODEL_MANAGER")
 if not TTS_USE_TORCH_MODEL_MANAGER_STR:
     raise ValueError("Не задан TTS_USE_TORCH_MODEL_MANAGER в .env")
 TTS_USE_TORCH_MODEL_MANAGER_BOOL = strtobool(TTS_USE_TORCH_MODEL_MANAGER_STR)
+
+TTS_SOUND_DEVICE_NAME = os.getenv("TTS_SOUND_DEVICE_NAME")
