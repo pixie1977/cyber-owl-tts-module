@@ -18,7 +18,7 @@ mutex = threading.Lock()
 shared_resource = 0
 
 # Настройка параметров ПЕРЕД инициализацией
-FREQUENCY = 48000
+FREQUENCY = 44100
 SIZE = -16  # 16-битный звук
 CHANNELS = 2  # Стерео (PCM2902 — стерео-кодек)
 BUFFER = 2048  # Размер буфера (увеличен для стабильности на Jetson)
@@ -27,6 +27,7 @@ BUFFER = 2048  # Размер буфера (увеличен для стабил
 def _initialize_mixer():
     """Инициализирует Pygame mixer с заданными параметрами."""
     try:
+        print(f"TTS_SOUND_DEVICE_NAME={TTS_SOUND_DEVICE_NAME}")
         mixer.pre_init(FREQUENCY, SIZE, CHANNELS, BUFFER)
         if TTS_SOUND_DEVICE_NAME:
             mixer.init(devicename=TTS_SOUND_DEVICE_NAME)

@@ -82,9 +82,7 @@
 
     <div id="status" class="status" style="display: none;"></div>
 
-    <script>
-        const API_BASE = "http://localhost:8081";
-
+    <script
         function setStatus(message, isError = false) {
             const statusEl = document.getElementById("status");
             statusEl.textContent = message;
@@ -100,7 +98,7 @@
             }
 
             try {
-                const response = await fetch(`${API_BASE}/api/tts/json`, {
+                const response = await fetch(`/api/tts/json`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ text })
@@ -127,7 +125,7 @@
 
             try {
                 const encodedText = encodeURIComponent(text);
-                const response = await fetch(`${API_BASE}/api/speak?text=${encodedText}`);
+                const response = await fetch(`/api/speak?text=${encodedText}`);
 
                 if (response.ok) {
                     const data = await response.json();
