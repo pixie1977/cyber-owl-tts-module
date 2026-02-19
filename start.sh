@@ -2,24 +2,56 @@
 set -e
 
 echo "🚀 Запуск Cyber Owl TTS сервера..."
-echo "📦 Версия Python: $(python --version 2>&1)"
-echo "🌍 API будет доступен на http://$TTS_HOST:$TTS_PORT"
-echo "📁 Документ-рут: $TTS_DOC_ROOT"
 
-# Проверка наличия модели
-if [ ! -f "./app/models/silero_model_ru.pt" ]; then
-    echo "❌ Ошибка: модель не найдена в ./app/models/silero_model_ru.pt"
-    echo "👉 Убедитесь, что вы скопировали модель в папку models/"
-    exit 1
+# Проверка и активация виртуального окружения
+VENV_DIR="./venv"
+PYTHON="$VENV_DIR/bin/python"
+
+if [ ! -d "$VENV_DIR" ]; then
+    echo "📁 Создаём виртуальное окружение..."
+    python3 -m venv "$VENV_DIR"
+else
+    echo "✅ Виртуальное окружение найдено."
 fi
 
-echo "✅ Модель найдена: silero_model_ru.pt"
+# Активация venv
+source "$VENV_DIR/bin/activate"
 
-# Устанавливаем PYTHONPATH, чтобы Python нашёл пакет `app`
-export PYTHONPATH="/app"
+# Установка зависимостей, если требуется
+if [ ! -f "$VENV_DIR/.requirements_installed" ] || [ "requirements.txt" -nt "$VENV_DIR/.requirements_installed" ]; then
+    echo "📦 Устанавливаем зависимости из requirements.txt..."
+    pip install --no-cache-dir -r requirements.txt
+    touch "$VENV_DIR/.requirements_installed"
+else
+    echo "✅ Зависимости уже установлены."
+fi
 
-echo "🔊 Проверка аудио..."
-pactl info || echo "PulseAudio недоступен (возможно, в контейнере)"
+# Проверка модели
+MODEL_PATH="./app/models/silero_model_ru.pt"
+if [ ! -f "$MODEL_PATH" ]; then
+    echo "❌ Ошибка: модель не найдена по пути $MODEL_PATH"
+    echo "👉 Скачайте silero_model_ru.pt и поместите в папку app/models/"
+    exit 1
+fi
+echo "✅ Модель найдена: $MODEL_PATH"
 
-# Запуск основного приложения
+# Экспорт переменных окружения (если не заданы)
+export PYTHONPATH="./app:$PYTHONPATH"
+export TTS_HOST=${TTS_HOST:-"0.0.0.0"}
+export TTS_PORT=${TTS_PORT:-8081}
+export TTS_LOG_LEVEL=${TTS_LOG_LEVEL:-"info"}
+
+echo "📦 Версия Python: $(python --version 2>&1)"
+echo "🌍 API будет доступен на http://$TTS_HOST:$TTS_PORT"
+
+# Проверка PulseAudio (опционально)
+if command -v pactl &> /dev/null; then
+    echo "🔊 PulseAudio: доступен"
+    pactl info | grep 'Server Name\|Library'
+else
+    echo "🔊 PulseAudio: не установлен (работает без аудио-переадресации)"
+fi
+
+# Запуск приложения
+echo "▶️ Запуск app.main..."
 exec python -m app.main
