@@ -7,6 +7,9 @@ import threading
 import time
 
 import numpy as np
+import pygame
+import pygame._sdl2.audio as sdl2_audio
+
 from pygame import mixer
 from scipy.io import wavfile
 
@@ -22,19 +25,32 @@ FREQUENCY = 44100
 SIZE = -16  # 16-битный звук
 CHANNELS = 2  # Стерео (PCM2902 — стерео-кодек)
 BUFFER = 2048  # Размер буфера (увеличен для стабильности на Jetson)
-
+AUDIO_OUTPUT = False
 
 def _initialize_mixer():
-    """Инициализирует Pygame mixer с заданными параметрами."""
+    names = sdl2_audio.get_audio_device_names(AUDIO_OUTPUT)
+
+    print(f"Available audio devices: {names}")
+
+    # Select the desired device name (e.g., the first one in the list, or a specific name like 'HDMI 0')
+    if names:
+        # You may need to change the index based on your specific setup
+        device_name = names[0]
+        print(f"Selected device: {device_name}")
+    else:
+        raise RuntimeError("No audio devices found!")
+
+    # Quit the current mixer (optional, but good practice if already initialized via pygame.init())
+    mixer.quit()
+
+    # Initialize the mixer with the specific device name
     try:
-        print(f"TTS_SOUND_DEVICE_NAME={TTS_SOUND_DEVICE_NAME}")
         mixer.pre_init(FREQUENCY, SIZE, CHANNELS, BUFFER)
-        if TTS_SOUND_DEVICE_NAME:
-            mixer.init(devicename=TTS_SOUND_DEVICE_NAME)
-        else:
-            mixer.init()
-        print(f"Mixer initialized at {FREQUENCY}Hz")
-    except Exception as e:
+        mixer.init(devicename=device_name)
+        print(f"Mixer initialized with device: {device_name}")
+    except pygame.error as e:
+        print(f"Failed to initialize mixer with device {device_name}: {e}")
+        # Handle error (e.g., fall back to default init)
         print(f"Failed to init mixer: {e}")
         raise
 
