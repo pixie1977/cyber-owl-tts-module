@@ -18,41 +18,47 @@ from app.config.config import TTS_SOUND_DEVICE_NAME
 
 # Глобальные переменные
 mutex = threading.Lock()
-shared_resource = 0
 
 # Настройка параметров ПЕРЕД инициализацией
-FREQUENCY = 44100
+FREQUENCY = 48000
 SIZE = -16  # 16-битный звук
 CHANNELS = 2  # Стерео (PCM2902 — стерео-кодек)
 BUFFER = 2048  # Размер буфера (увеличен для стабильности на Jetson)
-AUDIO_OUTPUT = False
+
 
 def _initialize_mixer():
-    names = sdl2_audio.get_audio_device_names(AUDIO_OUTPUT)
+    """Инициализирует SDL и Pygame mixer с выбором аудиоустройства."""
+    # Инициализируем SDL с аудио
+    pygame.display.init()  # Требуется для корректной инициализации SDL
+    pygame.init()
 
-    print(f"Available audio devices: {names}")
+    names = sdl2_audio.get_audio_device_names(False)  # False = output devices
 
-    # Select the desired device name (e.g., the first one in the list, or a specific name like 'HDMI 0')
-    if names:
-        # You may need to change the index based on your specific setup
-        device_name = names[0]
-        print(f"Selected device: {device_name}")
-    else:
-        raise RuntimeError("No audio devices found!")
-
-    # Quit the current mixer (optional, but good practice if already initialized via pygame.init())
-    mixer.quit()
-
-    # Initialize the mixer with the specific device name
-    try:
+    if not names:
+        print("⚠️  Не найдено ни одного аудиоустройства.")
+        # Продолжаем с дефолтным устройством
         mixer.pre_init(FREQUENCY, SIZE, CHANNELS, BUFFER)
+        mixer.init()
+        print("✅ Mixer инициализирован с устройством по умолчанию.")
+        return
+
+    print(f"🎧 Доступные аудиоустройства: {names}")
+
+    # Выбираем устройство: сначала по конфигу, иначе первое в списке
+    device_name = TTS_SOUND_DEVICE_NAME or names[0]
+    print(f"🔊 Используем устройство: {device_name}")
+
+    mixer.quit()  # Закрываем предыдущий микшер
+    mixer.pre_init(FREQUENCY, SIZE, CHANNELS, BUFFER)
+
+    try:
         mixer.init(devicename=device_name)
-        print(f"Mixer initialized with device: {device_name}")
-    except pygame.error as e:
-        print(f"Failed to initialize mixer with device {device_name}: {e}")
-        # Handle error (e.g., fall back to default init)
-        print(f"Failed to init mixer: {e}")
-        raise
+        print(f"✅ Mixer инициализирован с устройством: {device_name}")
+    except Exception as e:
+        print(f"❌ Ошибка при инициализации с устройством '{device_name}': {e}")
+        print("🔧 Пытаемся с дефолтным устройством...")
+        mixer.init()
+        print("✅ Mixer инициализирован с дефолтным устройством.")
 
 
 # Инициализация при импорте
@@ -73,7 +79,7 @@ def play_sound(audio, samplerate):
         buffer.seek(0)
         play_sound_mixer(buffer)
     except Exception as e:
-        print(f"Error in play_sound: {e}")
+        print(f"❌ Ошибка в play_sound: {e}")
 
 
 def play_sound_mixer(audio_bytes):
@@ -90,7 +96,7 @@ def play_sound_mixer(audio_bytes):
         while mixer.music.get_busy():
             time.sleep(0.1)  # Небольшая пауза, чтобы не загружать CPU
     except Exception as e:
-        print(f"Error playing sound: {e}")
+        print(f"❌ Ошибка при воспроизведении: {e}")
     finally:
         mutex.release()
-        print(f"{thread_name} освободил аудио")
+        print(f"🟢 {thread_name} освободил аудио")
