@@ -5,10 +5,12 @@ from functools import lru_cache
 import torch
 from omegaconf import OmegaConf
 
-from ..core.sound_device_provider import play_sound
+from app.config.config import TTS_USE_TORCH_MODEL_MANAGER_BOOL
+from app.core.sound_device_provider import play_sound
+from app.utils.utils import Utils
+
 # Абсолютные импорты
-from ..config.config import TTS_USE_TORCH_MODEL_MANAGER_BOOL
-from ..utils.utils import Utils
+
 
 
 # --- Константы: голоса ---

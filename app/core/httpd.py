@@ -8,6 +8,8 @@ from fastapi import FastAPI, Request, Form, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+
+from app.core.logger import get_logger
 # from prometheus_fastapi_instrumentator import Instrumentator
 
 # Импорт TTS движка
@@ -15,6 +17,7 @@ from app.core.text_to_speech import TTS
 from app.config.config import TTS_DOC_ROOT
 
 
+log = get_logger(__name__)
 app = FastAPI(title="TTS API Server")
 
 # Подключаем статические файлы
@@ -46,7 +49,7 @@ async def health_check():
 
 
 @app.post("/api/tts")
-async def text_to_speech(text: str = Form(...)):
+async def text_to_speech(text: str):
     """
     Обработка POST-запроса с формой (application/x-www-form-urlencoded)
     """
@@ -56,6 +59,7 @@ async def text_to_speech(text: str = Form(...)):
         tts_engine.text_to_speech(text_in=text)
         return JSONResponse(content={"status": "success", "text": text})
     except Exception as e:
+        log.warn(e)
         raise HTTPException(status_code=500, detail=f"TTS error: {str(e)}")
 
 
@@ -70,6 +74,7 @@ async def text_to_speech_json(request: TTSTextRequest):
         tts_engine.text_to_speech(text_in=request.text)
         return {"status": "success", "text": request.text}
     except Exception as e:
+        log.warn(e)
         raise HTTPException(status_code=500, detail=f"TTS error: {str(e)}")
 
 
@@ -85,4 +90,5 @@ async def speak_get(text: str):
         tts_engine.text_to_speech(text_in=text)
         return {"status": "success", "text": text}
     except Exception as e:
+        log.warn(e)
         raise HTTPException(status_code=500, detail=f"TTS error: {str(e)}")

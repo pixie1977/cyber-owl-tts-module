@@ -63,7 +63,6 @@ curl -X POST http://localhost:8081/api/tts -d "text=Здравствуйте, к
      
 -d автоматически устанавливает тип application/x-www-form-urlencoded.
 
-
 🔹 JSON: application/json (/api/tts/json)      
  curl -X POST http://localhost:8081/api/tts/json \
      -H "Content-Type: application/json" \
@@ -115,3 +114,6 @@ docker run -p 8081:8081 \
   -e TTS_LOG_LEVEL=info \
   --name tts-server \
   cyber-owl-tts
+
+
+curl -X POST http://localhost:8081/api/tts -d "text=Здравствуйте, как у вас дела?"
