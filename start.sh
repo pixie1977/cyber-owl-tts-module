@@ -35,12 +35,6 @@ if [ ! -f "$MODEL_PATH" ]; then
 fi
 echo "✅ Модель найдена: $MODEL_PATH"
 
-# Экспорт переменных окружения (если не заданы)
-export PYTHONPATH="./app:$PYTHONPATH"
-export TTS_HOST=${TTS_HOST:-"0.0.0.0"}
-export TTS_PORT=${TTS_PORT:-8081}
-export TTS_LOG_LEVEL=${TTS_LOG_LEVEL:-"info"}
-
 echo "📦 Версия Python: $(python --version 2>&1)"
 echo "🌍 API будет доступен на http://$TTS_HOST:$TTS_PORT"
 
