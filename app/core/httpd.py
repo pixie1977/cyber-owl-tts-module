@@ -13,6 +13,7 @@ from app.core.logger import get_logger
 # from prometheus_fastapi_instrumentator import Instrumentator
 
 # Импорт TTS движка
+from app.core.sound_device_provider import play_sound, stop_sound
 from app.core.text_to_speech import TTS
 from app.config.config import TTS_DOC_ROOT
 
@@ -92,3 +93,31 @@ async def speak_get(text: str):
     except Exception as e:
         log.warn(e)
         raise HTTPException(status_code=500, detail=f"TTS error: {str(e)}")
+
+
+@app.post("/api/stop")
+async def stop_speech():
+    """
+    Мгновенная остановка текущей озвучки (команда "заткнись").
+    Пример: POST /api/stop
+    """
+    try:
+        stop_sound()
+        return {"status": "stopped"}
+    except Exception as e:
+        log.warning(f"Ошибка при остановке: {e}")
+        raise HTTPException(status_code=500, detail=f"Stop error: {str(e)}")
+
+
+@app.get("/api/stop")
+async def stop_speech_get():
+    """
+    GET-версия команды остановки.
+    Пример: GET /api/stop
+    """
+    try:
+        stop_sound()
+        return {"status": "stopped"}
+    except Exception as e:
+        log.warning(f"Ошибка при остановке: {e}")
+        raise HTTPException(status_code=500, detail=f"Stop error: {str(e)}")

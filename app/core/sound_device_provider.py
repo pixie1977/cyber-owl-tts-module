@@ -14,6 +14,10 @@ from pygame import mixer
 from scipy.io import wavfile
 
 from app.config.config import TTS_SOUND_DEVICE_NAME
+from app.core.logger import get_logger
+
+
+log = get_logger(__name__)
 
 
 # Глобальные переменные
@@ -80,6 +84,15 @@ def play_sound(audio, samplerate):
         play_sound_mixer(buffer)
     except Exception as e:
         print(f"❌ Ошибка в play_sound: {e}")
+
+
+def stop_sound():
+    """Мгновенно останавливает текущее воспроизведение."""
+    try:
+        mixer.music.stop()
+        log.info("Аудиовоспроизведение остановлено")
+    except Exception as e:
+        log.warning(f"Ошибка при остановке аудио: {e}")
 
 
 def play_sound_mixer(audio_bytes):

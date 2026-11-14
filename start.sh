@@ -38,10 +38,31 @@ echo "✅ Модель найдена: $MODEL_PATH"
 echo "📦 Версия Python: $(python --version 2>&1)"
 echo "🌍 API будет доступен на http://$TTS_HOST:$TTS_PORT"
 
-# Проверка PulseAudio (опционально)
+# Запуск PulseAudio (если не запущен)
 if command -v pactl &> /dev/null; then
-    echo "🔊 PulseAudio: доступен"
-    pactl info | grep 'Server Name\|Library'
+    echo "🔊 Настройка PulseAudio..."
+    if ! pactl info &> /dev/null 2>&1; then
+        echo "⚡ Запуск PulseAudio..."
+        export PULSE_RUNTIME_PATH="/tmp/pulse"
+        mkdir -p "$PULSE_RUNTIME_PATH"
+        pulseaudio --kill 2>/dev/null || true
+        # Пытаемся запустить PulseAudio с разными опциями
+        if [ "$(whoami)" = "root" ]; then
+            export PULSE_SYSTEM=1
+            pulseaudio --start --system --exit-idle-time=-1 --disallow-exit 2>/dev/null || \
+            pulseaudio --start --exit-idle-time=-1 --disallow-exit 2>/dev/null || true
+        else
+            pulseaudio --start --exit-idle-time=-1 --disallow-exit 2>/dev/null || true
+        fi
+        sleep 1
+        if pactl info &> /dev/null 2>&1; then
+            echo "✅ PulseAudio запущен"
+        else
+            echo "⚠️ PulseAudio не запустился — попробуем ALSA напрямую"
+        fi
+    else
+        echo "✅ PulseAudio уже запущен"
+    fi
 else
     echo "🔊 PulseAudio: не установлен (работает без аудио-переадресации)"
 fi
