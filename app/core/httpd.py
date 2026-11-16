@@ -102,6 +102,7 @@ async def stop_speech():
     Пример: POST /api/stop
     """
     try:
+        log.info("Получена команда остановки озвучки")
         stop_sound()
         return {"status": "stopped"}
     except Exception as e:
@@ -116,6 +117,7 @@ async def stop_speech_get():
     Пример: GET /api/stop
     """
     try:
+        log.info("Получена команда остановки озвучки (GET)")
         stop_sound()
         return {"status": "stopped"}
     except Exception as e:

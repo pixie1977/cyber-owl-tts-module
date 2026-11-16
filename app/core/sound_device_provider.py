@@ -22,6 +22,7 @@ log = get_logger(__name__)
 
 # Глобальные переменные
 mutex = threading.Lock()
+_is_playing = False
 
 # Настройка параметров ПЕРЕД инициализацией
 FREQUENCY = 44100
@@ -108,8 +109,16 @@ def play_sound(audio, samplerate):
 
 def stop_sound():
     """Мгновенно останавливает текущее воспроизведение."""
+    global _is_playing
     try:
-        mixer.music.stop()
+        # Проверяем, инициализирован ли микшер
+        if not mixer.get_init()[0]:
+            log.warning("Микшер не инициализирован, не можем остановить")
+            return
+        
+        with mutex:
+            mixer.music.stop()
+            _is_playing = False
         log.info("Аудиовоспроизведение остановлено")
     except Exception as e:
         log.warning(f"Ошибка при остановке аудио: {e}")
@@ -121,15 +130,20 @@ def play_sound_mixer(audio_bytes):
 
     :param audio_bytes: Байтовый поток .wav
     """
+    global _is_playing
     thread_name = threading.current_thread().name
     mutex.acquire()
     try:
+        _is_playing = True
         mixer.music.load(audio_bytes)
         mixer.music.play()
-        while mixer.music.get_busy():
-            time.sleep(0.05)  # Небольшая пауза, чтобы не загружать CPU
+        timeout = 0
+        while mixer.music.get_busy() and timeout < 3000:
+            time.sleep(0.05)
+            timeout += 50
+        _is_playing = False
     except Exception as e:
         print(f"❌ Ошибка при воспроизведении: {e}")
     finally:
         mutex.release()
-        print(f"🟢 {thread_name} освободил аудио")
+        log.info(f"🟢 {thread_name} освободил аудио")
