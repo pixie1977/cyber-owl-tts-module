@@ -36,6 +36,17 @@ def _initialize_mixer():
     # НАСТРОЙКА ALSA: Принудительно связываем SDL с ALSA плагином plughw
     os.environ["SDL_AUDIODRIVER"] = "alsa"
     os.environ["AUDIODEV"] = "plughw:0,0"
+    
+    # Fallback для XDG_RUNTIME_DIR при запуске от root
+    if not os.environ.get("XDG_RUNTIME_DIR"):
+        xdg_dir = f"/run/user/{os.getuid()}"
+        if not os.path.exists(xdg_dir):
+            os.makedirs(xdg_dir, exist_ok=True)
+        os.environ["XDG_RUNTIME_DIR"] = xdg_dir
+    if not os.environ.get("PULSE_RUNTIME_PATH"):
+        pulse_dir = f"{os.environ['XDG_RUNTIME_DIR']}/pulse"
+        os.makedirs(pulse_dir, exist_ok=True)
+        os.environ["PULSE_RUNTIME_PATH"] = pulse_dir
 
     pygame.display.init()  # Требуется для корректной инициализации SDL
     pygame.init()

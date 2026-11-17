@@ -38,6 +38,12 @@ echo "✅ Модель найдена: $MODEL_PATH"
 echo "📦 Версия Python: $(python --version 2>&1)"
 echo "🌍 API будет доступен на http://$TTS_HOST:$TTS_PORT"
 
+# Настройка переменных окружения для ALSA/PulseAudio (при запуске от root)
+export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+mkdir -p "$XDG_RUNTIME_DIR" 2>/dev/null || true
+export PULSE_RUNTIME_PATH="$XDG_RUNTIME_DIR/pulse"
+mkdir -p "$PULSE_RUNTIME_PATH" 2>/dev/null || true
+
 # Проверка PulseAudio (добавлен || true, чтобы фоновый systemd не ронял скрипт)
 if command -v pactl &> /dev/null; then
     echo "🔊 PulseAudio: доступен"
