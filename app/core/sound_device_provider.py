@@ -91,6 +91,7 @@ _initialize_mixer()
 def play_sound(audio, samplerate):
     """
     Преобразует аудио в .wav и передаёт на воспроизведение.
+    Запускается в отдельном потоке, чтобы не блокировать текущий.
 
     :param audio: Аудиоданные (Tensor)
     :param samplerate: Частота дискретизации
@@ -113,7 +114,13 @@ def play_sound(audio, samplerate):
         wavfile.write(buffer, rate=FREQUENCY, data=wav_data)
         buffer.seek(0)
         
-        play_sound_mixer(buffer)
+        # Запускаем воспроизведение в отдельном потоке
+        thread = threading.Thread(
+            target=play_sound_mixer,
+            args=(buffer,),
+            daemon=True,
+        )
+        thread.start()
     except Exception as e:
         print(f"❌ Ошибка в play_sound: {e}")
 
