@@ -150,8 +150,10 @@ def play_sound_mixer(audio_bytes):
         while mixer.music.get_busy() and timeout < 3000 and _is_playing == True:
             time.sleep(0.05)
             timeout += 50
-        if _is_playing == False:
+
+        if not _is_playing:
             mixer.music.stop()
+            log.info("Аудиовоспроизведение остановлено")
         _is_playing = False
     except Exception as e:
         print(f"❌ Ошибка при воспроизведении: {e}")
