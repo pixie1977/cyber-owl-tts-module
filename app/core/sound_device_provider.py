@@ -127,10 +127,8 @@ def stop_sound():
             log.warning("Микшер не инициализирован, не можем остановить")
             return
         
-        with mutex:
-            mixer.music.stop()
-            _is_playing = False
-        log.info("Аудиовоспроизведение остановлено")
+        _is_playing = False
+        log.info("Аудиовоспроизведение останавливается")
     except Exception as e:
         log.warning(f"Ошибка при остановке аудио: {e}")
 
@@ -149,9 +147,10 @@ def play_sound_mixer(audio_bytes):
         mixer.music.load(audio_bytes)
         mixer.music.play()
         timeout = 0
-        while mixer.music.get_busy() and timeout < 3000:
+        while mixer.music.get_busy() and timeout < 3000 and _is_playing:
             time.sleep(0.05)
             timeout += 50
+        mixer.music.stop()
         _is_playing = False
     except Exception as e:
         print(f"❌ Ошибка при воспроизведении: {e}")
