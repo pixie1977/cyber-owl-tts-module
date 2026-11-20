@@ -147,10 +147,10 @@ def play_sound_mixer(audio_bytes):
         mixer.music.load(audio_bytes)
         mixer.music.play()
         timeout = 0
-        while mixer.music.get_busy() and timeout < 3000 and _is_playing:
+        while mixer.music.get_busy() and timeout < 3000 and _is_playing == True:
             time.sleep(0.05)
             timeout += 50
-        if not _is_playing:
+        if _is_playing == False:
             mixer.music.stop()
         _is_playing = False
     except Exception as e:
